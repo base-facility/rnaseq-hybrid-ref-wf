@@ -1,4 +1,4 @@
-## workflow title
+## Hybrid reference generation pipeline
 
 Generate hybrid reference genome, transcriptome, and annotation files based on a primary reference (e.g., Human reference files) from a list of input FASTA files.
 
