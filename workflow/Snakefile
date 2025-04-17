@@ -11,4 +11,5 @@ include: "rules/process.smk"
 
 rule all:
     input: 
-        expand("results/cat/hybrid_ref_tx.fa", id=samples['sample_id']),
+        expand("results/cat/hybrid_ref_tx.fa.gz", id=samples['sample_id']),
+        expand("results/gtf/hybrid.gtf.gz", id=samples['sample_id']),
