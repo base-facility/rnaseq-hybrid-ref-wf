@@ -1,0 +1,5 @@
+samples: config/samples.tsv
+units: config/units.tsv
+ref_fa: /Users/la.uqmzardb/ref/hs/GRCh38.primary_assembly.genome.fa.gz
+ref_gtf: /Users/la.uqmzardb/ref/hs/gencode.v47.primary_assembly.annotation.gtf.gz
+ref_tx: /Users/la.uqmzardb/ref/hs/gencode.v47.pc_transcripts.fa.gz

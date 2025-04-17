@@ -1,0 +1,14 @@
+from snakemake.utils import min_version
+min_version('7.0')
+
+# Include base environment and tools that are required for Snakefile script (e.g., Pandas)
+conda: "envs/global_env.yaml"
+# Import config file so all included scripts have access to config data
+configfile: "config/config.yaml"
+
+include: "rules/commons.smk"
+include: "rules/process.smk"
+
+rule all:
+    input: 
+        expand("results/cat/hybrid_ref_tx.fa", id=samples['sample_id']),
