@@ -38,4 +38,3 @@ dependencies:
   - perl=5.32.1=7_hd590300_perl5
   - samtools=1.21=h96c455f_1
   - zstd=1.5.7=hb8e6e7a_1
-prefix: /home/uqmzardb/miniforge3/envs/samtools
