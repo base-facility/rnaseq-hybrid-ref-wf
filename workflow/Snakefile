@@ -13,3 +13,8 @@ rule all:
     input: 
         expand("results/cat/hybrid_ref_tx.fa.gz", id=samples['sample_id']),
         expand("results/gtf/hybrid.gtf.gz", id=samples['sample_id']),
+        expand("results/salmon_idx/info.json", id=samples['sample_id']),
+        expand("results/qc/{id}_fastqc.done", id=sample_reads['sample_id']),
+        expand("results/salmon/{id}/quant.sf", id=sample_reads['sample_id']),
+        expand("results/salmon/{id}/quant.sf", id=sample_reads['sample_id']),
+        expand("results/star/{id}.sorted.bam", id=sample_reads['sample_id']),

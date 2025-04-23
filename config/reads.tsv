@@ -1,0 +1,4 @@
+sample_id	read_1	read_2
+Rb1_8hrs_1	/home/projects/nielsen_rnaseq/raw_data/NIE14831/Rb1_8hrs_1_NIE14831A7_22W7NLLT3_S14_R1_001.fastq.gz	/home/projects/nielsen_rnaseq/raw_data/NIE14831/Rb1_8hrs_1_NIE14831A7_22W7NLLT3_S14_R2_001.fastq.gz
+axin_8hrs_1	/home/projects/nielsen_rnaseq/raw_data/NIE14831/AXIN1_8hrs_1_NIE14831A16_22W7NLLT3_S16_L006_R1_001.fastq.gz	/home/projects/nielsen_rnaseq/raw_data/NIE14831/AXIN1_8hrs_1_NIE14831A16_22W7NLLT3_S16_L006_R2_001.fastq.gz
+p53_8hrs_1	/home/projects/nielsen_rnaseq/raw_data/NIE14831/p53_8hrs_1_NIE14831A10_22W7NLLT3_S28_R1_001.fastq.gz	/home/projects/nielsen_rnaseq/raw_data/NIE14831/p53_8hrs_1_NIE14831A10_22W7NLLT3_S28_R2_001.fastq.gz

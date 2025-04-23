@@ -1,5 +1,6 @@
 samples: config/samples.tsv
 units: config/units.tsv
+reads: config/reads.tsv
 ref_fa: /home/ref/hg/GRCh38.primary_assembly.genome.fa.gz
 ref_gtf: /home/ref/hg/gencode.v47.primary_assembly.annotation.gtf.gz
 ref_tx: /home/ref/hg/gencode.v47.transcripts.fa.gz

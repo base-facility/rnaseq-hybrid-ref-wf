@@ -4,3 +4,5 @@ results/
 *__pycache__
 logs/
 benchmarks/
+tmp/
+_STARtmp/
