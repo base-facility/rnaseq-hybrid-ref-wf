@@ -1,6 +1,9 @@
 samples: config/samples.tsv
 units: config/units.tsv
 reads: config/reads.tsv
+# Genome reference sequence fasta .gz compressed file
 ref_fa: /home/ref/hg/GRCh38.primary_assembly.genome.fa.gz
+# Genome reference annotation in gtf.gz format
 ref_gtf: /home/ref/hg/gencode.v47.primary_assembly.annotation.gtf.gz
+# Transcriptome reference sequence in .fa.gz format
 ref_tx: /home/ref/hg/gencode.v47.transcripts.fa.gz

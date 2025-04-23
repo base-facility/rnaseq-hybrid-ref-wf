@@ -8,6 +8,8 @@ Generate hybrid reference genome, transcriptome, and annotation files based on a
 - Primary reference genome (e.g., Human reference files) (`.fa.gz`)
 - Reference annotation file (GTF) (`.gtf.gz`)
 - Reference transcriptome file (`.fa.gz`)
+- RNA-seq read 1 dataset (`.fq.gz`)
+- RNA-seq read 2 dataset (`.fq.gz`)
 
 **System requirements:**
 
@@ -15,7 +17,11 @@ Generate hybrid reference genome, transcriptome, and annotation files based on a
 
 ### Usage
 
-Populate your input file path in `config/config.yaml`, sample names and input files in `config/samples.yaml` and `config/units.yaml`.
+Populate your input file path in `config/config.yaml`, `config/reads.tsv`, `config/units.tsv`, and `config/samples.tsv` as described below:
+
+    Modify `config/config.yaml` to add your reference files (i.e., genome, transcriptome, and annotation of sample's primary species).
+    Modify `config/reads.tsv` to add your RNA-seq read 1 and 2 datasets.
+    Modify `config/units.tsv` to add your synthetic contigs in .fa format file path. Each contig sequence could be passed as a single fasta file with a given ID and name in `config/samples.tsv`.
 
 If `snakemake` is not installed on your local system, simplest way to install `snakemake` is by creating a new conda environment with an isolated Snakemake installation:
 
