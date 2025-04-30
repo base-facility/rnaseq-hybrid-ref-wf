@@ -12,4 +12,3 @@ dependencies:
   - libgcc=14.2.0=h767d61c_2
   - libgomp=14.2.0=h767d61c_2
   - libstdcxx=14.2.0=h8f9b012_2
-prefix: /home/uqmzardb/miniforge3/envs/fastp
