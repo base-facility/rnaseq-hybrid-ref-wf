@@ -19,9 +19,9 @@ Generate hybrid reference genome, transcriptome, and annotation files based on a
 
 Populate your input file path in `config/config.yaml`, `config/reads.tsv`, `config/units.tsv`, and `config/samples.tsv` as described below:
 
-    Modify `config/config.yaml` to add your reference files (i.e., genome, transcriptome, and annotation of sample's primary species). Genome reference: `ref_fa`, Annotation: `ref_gtf`, Transcript reference sequences: `ref_tx`.
-    Modify `config/reads.tsv` to add your RNA-seq read 1 and 2 datasets. Note that `sample_id` column values will be utilised for naming output files.
-    Modify `config/units.tsv` to add your synthetic contigs in fasta `.fa` format file path. Each contig sequence could be passed as a single fasta file with a given ID and name in `config/samples.tsv`.
+- Modify `config/config.yaml` to add your reference files (i.e., genome, transcriptome, and annotation of sample's primary species). Genome reference: `ref_fa`, Annotation: `ref_gtf`, Transcript reference sequences: `ref_tx`.
+- Modify `config/reads.tsv` to add your RNA-seq read 1 and 2 datasets. Note that `sample_id` column values will be utilised for naming output files.
+- Modify `config/units.tsv` to add your synthetic contigs in fasta `.fa` format file path. Each contig sequence could be passed as a single fasta file with a given ID and name in `config/samples.tsv`.
 
 If `snakemake` is not installed on your local system/server, you can install it using mamba (highly recommended) or conda:
 
