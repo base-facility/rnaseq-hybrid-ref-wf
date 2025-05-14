@@ -62,7 +62,7 @@ top10_counts <- quant_df %>%
 # Cytokines and innate immune response related transcripts
 cxcl10 <- c("ENST00000306602.3")
 
-tnf <- c("ENST00000376122.3")
+tnf <- c("ENST00000376122.3", "ENST00000699334.1")
 
 il6 <- c("ENST00000258743.10", "ENST00000404625.5", "ENST00000485300.1", "ENST00000407492.5",
          "ENST00000401630.7", "ENST00000406575.1", "ENST00000426291.5", "ENST00000401651.5")
