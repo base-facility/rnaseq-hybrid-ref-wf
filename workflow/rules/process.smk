@@ -231,3 +231,28 @@ rule sort_bam:
         {output};
         rm {params.bam} 2> {log}
         '''
+
+# Generate report for synthetic contruct quantitation
+rule report:
+    input: "results/salmon/{id}/quant.sf"
+    output: "results/report/{id}.html"
+    conda: "../envs/r.yaml"
+    log: "logs/{id}_report.log"
+    benchmark: "benchmarks/{id}_report.benchmark"
+    threads: 32
+    params:
+        sample_id = "{id}",
+        synth = samples['name'].to_list(),
+        outdir = "results/report",
+        outfile = "{id}.html",
+        knitroot = cwd
+    shell:
+        '''
+        Rscript workflow/scripts/report.R \
+        --id {params.sample_id} \
+        --quant {input} \
+        --output_dir {params.outdir} \
+        --output_file {params.outfile} \
+        --knit_root {params.knitroot} \
+        --synth {params.synth}
+        '''

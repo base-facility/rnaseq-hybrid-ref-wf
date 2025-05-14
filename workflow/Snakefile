@@ -1,5 +1,8 @@
 from snakemake.utils import min_version
 min_version('7.0')
+import os
+cwd = os.getcwd()
+print(cwd)
 
 # Include base environment and tools that are required for Snakefile script (e.g., Pandas)
 conda: "envs/global_env.yaml"
@@ -18,3 +21,4 @@ rule all:
         expand("results/salmon/{id}/quant.sf", id=sample_reads['sample_id']),
         expand("results/salmon/{id}/quant.sf", id=sample_reads['sample_id']),
         expand("results/star/{id}.sorted.bam", id=sample_reads['sample_id']),
+        expand("results/report/{id}.html", id=sample_reads['sample_id']),
