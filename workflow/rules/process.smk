@@ -241,11 +241,11 @@ rule synth_coverage:
     benchmark: "benchmarks/{id}_synth_coverage.benchmark"
     threads: 8
     params:
-        region = samples['name'].to_list()
+        region = " ".join(samples['name'].to_list())
     shell:
         '''
-        for region in {" ".join(params.region)}; do
-            samtools depth -@ {thread} -a -r {params.region} {input} >> {output}
+        for region in {params.region}; do
+            samtools depth -@ {threads} -a -r $region {input} >> {output}
         done 2> {log}
         '''
 
