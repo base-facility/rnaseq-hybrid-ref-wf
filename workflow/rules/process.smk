@@ -232,6 +232,23 @@ rule sort_bam:
         rm {params.bam} 2> {log}
         '''
 
+# Generate synthetic construct coverage
+rule synth_coverage:
+    input: "results/star/{id}.sorted.bam"
+    output: "results/samtools_depth/{id}_samtools.depth.tsv"
+    conda: "../envs/samtools.yaml"
+    log: "logs/{id}_synth_coverage.log"
+    benchmark: "benchmarks/{id}_synth_coverage.benchmark"
+    threads: 8
+    params:
+        region = samples['name'].to_list()
+    shell:
+        '''
+        for region in {" ".join(params.region)}; do
+            samtools depth -@ {thread} -a -r {params.region} {input} >> {output}
+        done 2> {log}
+        '''
+
 # Generate report for synthetic contruct quantitation
 rule report:
     input: "results/salmon/{id}/quant.sf"
