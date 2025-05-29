@@ -6,6 +6,8 @@ editor_options:
 params:
   sample_id: NULL
   quant: NULL
+  txid_mapping: NULL
+  coverage: NULL
   synth_name: 
     value: []
 ---
@@ -31,8 +33,13 @@ suppressPackageStartupMessages({
 
 ```{r import data}
 sample_id <- params$sample_id
-quant_df <- fread(params$quant, sep="\t", header=TRUE)
+quant_df <- fread(params$quant, sep="\t", header=TRUE) %>% 
+  mutate(NumReads=as.integer(NumReads))
 synth_name <- params$synth_name
+txids <- fread(params$txid_mapping, sep="\t", header=TRUE)
+txids <- txids %>% dplyr::rename(Name=`#hg38.knownGene.name`, GeneSymbol=hg38.kgXref.geneSymbol) %>% dplyr::select(Name, GeneSymbol)
+# samtools depth output
+depth <- fread(params$coverage, sep="\t", header=FALSE, col.names=c("Name", "pos", "cov"))
 ```
 
 ```{r synth quant stats}
@@ -47,17 +54,21 @@ synth_perc <- (synth_quant %>% dplyr::pull(NumReads)) / total_counts
 
 # Synth TPM
 synth_tpm = synth_quant %>% 
-  mutate(ReadRatio=NumReads / total_counts,
+  mutate(Fraction=NumReads / total_counts,
          Log1P=log1p(TPM)) %>%
-  dplyr::select(Name, TPM, Log1P, ReadRatio)
+  dplyr::select(Name, Length, TPM, Log1P, NumReads, Fraction)
 
 # Get top 10 most abundant read count
 top10_counts <- quant_df %>%
   dplyr::arrange(desc(TPM)) %>%
   dplyr::slice_head(n=10) %>%
   # mutate(Name=stringr::str_replace(Name, "\\.\\d+$", "")) %>%
-  mutate(Log1P=log1p(TPM)) %>% 
-  dplyr::select(Name, Length, TPM, Log1P, NumReads)
+  mutate(Log1P=log1p(TPM), Fraction=NumReads / total_counts)
+
+lj_df <- txids %>% dplyr::filter(Name %in% top10_counts$Name)
+top10_counts <- top10_counts %>% 
+  dplyr::left_join(lj_df) %>%
+  dplyr::select(Name, GeneSymbol, Length, TPM, Log1P, NumReads, Fraction)
 
 # Cytokines and innate immune response related transcripts
 cxcl10 <- c("ENST00000306602.3")
@@ -72,6 +83,10 @@ il8 <- c("ENST00000307407.8", "ENST00000401931.2")
 il1b <- c("ENST00000263341.7", "ENST00000418817.5", "ENST00000432018.5", "ENST00000416750.1")
 
 ifnb1 <- c("ENST00000380232.4")
+
+immune_response <- c("ENST00000306602.3", "ENST00000376122.3", "ENST00000699334.1", "ENST00000258743.10", "ENST00000404625.5", "ENST00000485300.1", "ENST00000407492.5",
+         "ENST00000401630.7", "ENST00000406575.1", "ENST00000426291.5", "ENST00000401651.5", "ENST00000307407.8", "ENST00000401931.2", "ENST00000263341.7", 
+         "ENST00000418817.5", "ENST00000432018.5", "ENST00000416750.1", "ENST00000380232.4")
 ```
 
 ```{r helper functions}
@@ -92,7 +107,7 @@ colPlot <- function(df, ids) {
 }
 ```
 
-## Sample: `r sample_id`
+## Library: `r sample_id`
 
 ### Sample-level info
 
@@ -105,7 +120,38 @@ kable_styling(outtibble, bootstrap_options = c("striped", "hover", "condensed", 
 ### Synthetic construct(s) quant
 
 ```{r}
-outtibble <- kableExtra::kable(synth_tpm, caption="ReadRatio: Synthetic read count / Total reads")
+outtibble <- kableExtra::kable(synth_tpm, caption="Fraction: Synthetic read count / Total reads")
+kable_styling(outtibble, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Synthetic construct(s) coverage
+
+**CovCV:** Coverage coefficient of variability (~uniformity) = Standard Deviation of coverage / Mean of coverage
+
+**NormPosCov:** Fraction of positions with normalised (uniformed) coverage (based on assumption of uniform and unbiased per base position coverage); This metric indicates the fraction of positions that have *a minimum coverage* (calculated from assuming uniform distribution of read counts: *sum of all coverage values per base / length of synthetic construct*). e.g., 0.4 can be interpreted as 40% of positions have a minimum coverage (where minimum coverage/read counts is calculated based on uniform read count distribution over the length of a synthetic construct).
+
+```{r}
+# Add perent_coverage >= x @ 95% of positions are covered at least 
+outtibble <- depth %>% 
+  group_by(Name) %>%
+  summarise(
+  # 'Min'=min(cov),
+  # `q05` = quantile(cov, probs = 0.05, na.rm = TRUE),
+  # `q10` = quantile(cov, probs = 0.10, na.rm = TRUE),
+  # `q15` = quantile(cov, probs = 0.15, na.rm = TRUE),
+  # `q25` = quantile(cov, probs = 0.25, na.rm = TRUE),
+  # normcov = sum(cov) / length(pos),
+  NormPosCoverage = sum(cov >= (sum(cov) / length(pos))) / length(pos),
+  Median = quantile(cov, probs = 0.50, na.rm = TRUE),
+  # `q75` = quantile(cov, probs = 0.75, na.rm = TRUE),
+  # `q85` = quantile(cov, probs = 0.85, na.rm = TRUE),
+  # `q90` = quantile(cov, probs = 0.90, na.rm = TRUE),
+  # `q95` = quantile(cov, probs = 0.95, na.rm = TRUE),
+  # 'Max'=max(cov),
+  # 'IQR'= IQR(cov),
+  CovCV = sd(cov) / mean(cov),
+  .groups = "drop"
+  ) %>% kableExtra::kable()
 kable_styling(outtibble, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
 
@@ -116,47 +162,67 @@ outtibble <- kableExtra::kable(top10_counts)
 kable_styling(outtibble, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
 
-### Immune response - CXCL10
-
-Directly correlated with activation of the IRF3 branch (i.e., lower Log1P TPM ~ minimal activation of the IRF3 branch).
+### Immune response
 
 ```{r}
+outtibble <- quant_df %>% 
+  dplyr::filter(Name %in% immune_response) %>% 
+  mutate(Fraction=NumReads / total_counts,
+         Log1P=log1p(TPM))
+lj_df <- txids %>% dplyr::filter(Name %in% immune_response)
+outtibble <- outtibble %>% 
+  left_join(lj_df) %>% 
+  dplyr::select(Name, GeneSymbol, Length, TPM, Log1P, NumReads, Fraction) %>% 
+  kableExtra::kable()
+kable_styling(outtibble, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+<!-- ### Immune response - CXCL10 -->
+
+<!-- Directly correlated with activation of the IRF3 branch (i.e., lower Log1P TPM ~ minimal activation of the IRF3 branch). -->
+
+```{r, eval=FALSE}
 colPlot(quant_df, cxcl10)
 ```
 
-### Immune response - TNF
+<!-- ### Immune response - TNF -->
 
-```{r}
+```{r, eval=FALSE}
 colPlot(quant_df, tnf)
 ```
 
-### Immune response - IL6
+<!-- ### Immune response - IL6 -->
 
-Directly correlated with activation of the IRF3 branch (i.e., lower Log1P TPM ~ minimal activation of the IRF3 branch).
+<!-- Directly correlated with activation of the IRF3 branch (i.e., lower Log1P TPM ~ minimal activation of the IRF3 branch). -->
 
-```{r}
+```{r, eval=FALSE}
 colPlot(quant_df, il6)
 ```
 
-### Immune response - IL8
+<!-- ### Immune response - IL8 -->
 
-```{r}
+```{r, eval=FALSE}
 colPlot(quant_df, il8)
 ```
 
-### Immune response - IL1B
+<!-- ### Immune response - IL1B -->
 
-Directly correlated with NF-κB pathway activation (i.e., lower Log1P TPM ~ minimal activation of NF-κB).
+<!-- Directly correlated with NF-κB pathway activation (i.e., lower Log1P TPM ~ minimal activation of NF-κB). -->
 
-```{r}
+```{r, eval=FALSE}
 colPlot(quant_df, il1b)
 ```
 
-### Immune response - IFNb1
+<!-- ### Immune response - IFNb1 -->
 
-Directly correlated with NF-κB pathway activation (i.e., lower Log1P TPM ~ minimal activation of NF-κB).
+<!-- Directly correlated with NF-κB pathway activation (i.e., lower Log1P TPM ~ minimal activation of NF-κB). -->
 
-```{r}
+```{r, eval=FALSE}
 colPlot(quant_df, ifnb1)
+```
+
+```{r test and dev, eval=FALSE}
+depth <- fread("axin_8hrs_1_samtools.depth.txt", sep="\t", header=FALSE, col.names = c("chr", "pos", "cov"))
+quantile(depth$cov, prob=90/100, na.rm=TRUE)
 ```
 

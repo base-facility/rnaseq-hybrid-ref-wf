@@ -1,0 +1,162 @@
+---
+title: "RNA-seq data report"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+params:
+  sample_id: NULL
+  quant: NULL
+  synth_name: 
+    value: []
+---
+
+```{r setup, include=FALSE, echo=FALSE, Warning=FALSE, error=FALSE}
+knitr::opts_chunk$set(echo=FALSE,
+                      warning=FALSE,
+                      error=FALSE,
+                      message=FALSE)
+
+suppressPackageStartupMessages({
+  library(data.table)
+  library(dplyr)
+  library(stringr)
+  library(tidyr)
+  library(ggplot2)
+  library(readr)
+  library(knitr)
+  library(kableExtra)
+  # library(biomaRt)
+  })
+```
+
+```{r import data}
+sample_id <- params$sample_id
+quant_df <- fread(params$quant, sep="\t", header=TRUE)
+synth_name <- params$synth_name
+```
+
+```{r synth quant stats}
+# Get percentage of read counts allocated to synth construct
+synth_quant <- quant_df %>% 
+  dplyr::filter(Name %in% synth_name)
+
+# Total read count per sample
+total_counts <- sum(quant_df[['NumReads']])
+# Synth read count percentage
+synth_perc <- (synth_quant %>% dplyr::pull(NumReads)) / total_counts
+
+# Synth TPM
+synth_tpm = synth_quant %>% 
+  mutate(ReadRatio=NumReads / total_counts,
+         Log1P=log1p(TPM)) %>%
+  dplyr::select(Name, TPM, Log1P, ReadRatio)
+
+# Get top 10 most abundant read count
+top10_counts <- quant_df %>%
+  dplyr::arrange(desc(TPM)) %>%
+  dplyr::slice_head(n=10) %>%
+  # mutate(Name=stringr::str_replace(Name, "\\.\\d+$", "")) %>%
+  mutate(Log1P=log1p(TPM)) %>% 
+  dplyr::select(Name, Length, TPM, Log1P, NumReads)
+
+# Cytokines and innate immune response related transcripts
+cxcl10 <- c("ENST00000306602.3")
+
+tnf <- c("ENST00000376122.3", "ENST00000699334.1")
+
+il6 <- c("ENST00000258743.10", "ENST00000404625.5", "ENST00000485300.1", "ENST00000407492.5",
+         "ENST00000401630.7", "ENST00000406575.1", "ENST00000426291.5", "ENST00000401651.5")
+
+il8 <- c("ENST00000307407.8", "ENST00000401931.2")
+
+il1b <- c("ENST00000263341.7", "ENST00000418817.5", "ENST00000432018.5", "ENST00000416750.1")
+
+ifnb1 <- c("ENST00000380232.4")
+```
+
+```{r helper functions}
+# Generate a bar plot
+# Inputs: dataframe, vector of tx ids
+colPlot <- function(df, ids) {
+  df %>% 
+  dplyr::filter(Name %in% ids) %>% 
+  mutate(Log1P=log1p(TPM)) %>% 
+  dplyr::select(Name, Log1P) %>% 
+  ggplot(aes(x=Name, y=Log1P, fill=Name)) +
+    geom_col(width=0.5) +
+    xlab("Transcript Name") +
+    ylab("Log(TPM + 1)") +
+    theme_classic() +
+    theme(axis.text.x=element_text(angle=45, hjust=1),
+          legend.position="none") 
+}
+```
+
+## Sample: `r sample_id`
+
+### Sample-level info
+
+```{r}
+samplesheet <- tibble(SampleName=sample_id, SyntheticConstructs=paste(synth_name, collapse=", "), ReadCount=total_counts)
+outtibble <- kableExtra::kable(samplesheet)
+kable_styling(outtibble, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Synthetic construct(s) quant
+
+```{r}
+outtibble <- kableExtra::kable(synth_tpm, caption="ReadRatio: Synthetic read count / Total reads")
+kable_styling(outtibble, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Top 10 most abundant (TPM) transcripts
+
+```{r}
+outtibble <- kableExtra::kable(top10_counts)
+kable_styling(outtibble, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Immune response - CXCL10
+
+Directly correlated with activation of the IRF3 branch (i.e., lower Log1P TPM ~ minimal activation of the IRF3 branch).
+
+```{r}
+colPlot(quant_df, cxcl10)
+```
+
+### Immune response - TNF
+
+```{r}
+colPlot(quant_df, tnf)
+```
+
+### Immune response - IL6
+
+Directly correlated with activation of the IRF3 branch (i.e., lower Log1P TPM ~ minimal activation of the IRF3 branch).
+
+```{r}
+colPlot(quant_df, il6)
+```
+
+### Immune response - IL8
+
+```{r}
+colPlot(quant_df, il8)
+```
+
+### Immune response - IL1B
+
+Directly correlated with NF-κB pathway activation (i.e., lower Log1P TPM ~ minimal activation of NF-κB).
+
+```{r}
+colPlot(quant_df, il1b)
+```
+
+### Immune response - IFNb1
+
+Directly correlated with NF-κB pathway activation (i.e., lower Log1P TPM ~ minimal activation of NF-κB).
+
+```{r}
+colPlot(quant_df, ifnb1)
+```
+

@@ -251,7 +251,9 @@ rule synth_coverage:
 
 # Generate report for synthetic contruct quantitation
 rule report:
-    input: "results/salmon/{id}/quant.sf"
+    input: 
+        salmon = "results/salmon/{id}/quant.sf",
+        coverage = "results/samtools_depth/{id}_samtools.depth.tsv"
     output: "results/report/{id}.html"
     conda: "../envs/r.yaml"
     log: "logs/{id}_report.log"
@@ -262,12 +264,15 @@ rule report:
         synth = samples['name'].to_list(),
         outdir = "results/report",
         outfile = "{id}.html",
-        knitroot = cwd
+        knitroot = cwd,
+        txid_mapping = "resources/txid_mapping.tsv"
     shell:
         '''
         Rscript workflow/scripts/report.R \
         --id {params.sample_id} \
-        --quant {input} \
+        --quant {input.salmon} \
+        --txid_mapping {params.txid_mapping} \
+        --coverage {input.coverage} \
         --output_dir {params.outdir} \
         --output_file {params.outfile} \
         --knit_root {params.knitroot} \

@@ -5,6 +5,8 @@ suppressPackageStartupMessages({
 parser <- ArgumentParser(description="Generate RNAseq report")
 parser$add_argument("-w", "--id",  dest="sample_id", help="Sample ID")
 parser$add_argument("-q", "--quant",  dest="quant", help="Salmon quant output (quant.sf)")
+parser$add_argument("-t", "--txid_mapping",  dest="txid_mapping", help="Transcript ID to Gene symbol mapping")
+parser$add_argument("-c", "--coverage",  dest="coverage", help="samtools depth coverage output")
 parser$add_argument("-d", "--output_dir",  dest="output_dir", help="Report output directory path")
 parser$add_argument("-f", "--output_file",  dest="output_file", help="Report output file path")
 parser$add_argument("-k", "--knit_root",  dest="knitroot", help="Knit root directory path")
@@ -22,6 +24,8 @@ message("Synthetic construct name:", args$synth_name)
 rmarkdown::render("workflow/scripts/report.Rmd",
                   params=list(sample_id=args$sample_id,
                               quant=args$quant,
+                              txid_mapping=args$txid_mapping,
+                              coverage=args$coverage,
                               synth_name=args$synth_name),
                   output_format="html_document",
                   output_dir=args$output_dir,
