@@ -84,7 +84,7 @@ rule subsample:
     log: "logs/subsample_{id}.log"
     benchmark: "benchmarks/subsample_{id}.benchmark"
     params:
-        size = 20000000
+        size = 60000000
     shell:
        '''
        seqtk sample -s80 {input.r1} {params.size} | bgzip -@ {threads} > {output.r1};
