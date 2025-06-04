@@ -84,7 +84,7 @@ rule subsample:
     log: "logs/subsample_{id}.log"
     benchmark: "benchmarks/subsample_{id}.benchmark"
     params:
-        size = 60000000
+        size = 20000000
     shell:
        '''
        seqtk sample -s80 {input.r1} {params.size} | bgzip -@ {threads} > {output.r1};
@@ -119,7 +119,8 @@ rule fastp_trim:
 rule salmon:
     input:
         tr1 = "results/qt_reads/{id}_R1_qt.fastq.gz",
-        tr2 = "results/qt_reads/{id}_R2_qt.fastq.gz"
+        tr2 = "results/qt_reads/{id}_R2_qt.fastq.gz",
+        index = "results/salmon_idx/info.json"
     output:
         quant = "results/salmon/{id}/quant.sf"
     threads: 12
